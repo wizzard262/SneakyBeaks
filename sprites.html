@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WGT Sprite Viewer</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 12px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cell { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px; text-align: center; cursor: pointer; }
+  .cell canvas { display: block; margin: 0 auto 4px; image-rendering: pixelated; background: var(--checker); }
+  .cell .n { font: bold 12px monospace; color: var(--accent); }
+  .cell .d { font: 11px monospace; color: var(--muted); }
+  .cell .a { font: 11px sans-serif; color: var(--text); max-width: 120px; }
+  .pal { display: grid; grid-template-columns: repeat(32, 14px); gap: 1px; margin: 8px 0 16px; }
+  .pal div { width: 14px; height: 14px; }
+  body { --checker: repeating-conic-gradient(#2a2d38 0% 25%, #22252e 0% 50%) 50% / 12px 12px; }
+  body.black { --checker: #000; }
+</style>
+</head>
+<body>
+<header>
+  <h1>WGT Sprite Viewer</h1>
+  <p class="sub">Reads WordUp Graphics Toolkit <code>.SPR</code> files (versions 1 to 4) right in the browser. Shows <code>BEAK.SPR</code> by default. Click a sprite to save it as a PNG.</p>
+</header>
+<div class="tools">
+  <label><input type="file" id="file" accept=".spr,.SPR"> Open another .SPR file</label>
+  <label>Zoom <select id="zoom"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>6</option></select></label>
+  <label><input type="checkbox" id="black"> Black background</label>
+  <label><input type="checkbox" id="crop" checked> Crop to visible pixels</label>
+  <button id="sheet">Download sprite sheet PNG</button>
+  <a href="index.html">Back to the game</a>
+</div>
+<div id="info" class="sub"></div>
+<h2>Palette</h2>
+<div class="pal" id="pal"></div>
+<h2>Sprites</h2>
+<div class="grid" id="grid"></div>
+
+<script src="assets/beak.spr.js"></script>
+<script src="js/spr.js"></script>
+<script>
+(function () {
+  // what the game uses each frame for (from BEK_SCR8.C)
+  const USES = {};
+  const tag = (a, b, s) => { for (let i = a; i <= b; i++) USES[i] = s; };
+  tag(0, 1, 'walk south'); tag(2, 3, 'walk north'); tag(4, 8, 'walk west'); tag(9, 13, 'walk east');
+  tag(14, 17, 'coin flip'); USES[18] = 'red sweet'; USES[19] = 'orange sweet'; USES[20] = 'yellow sweet'; USES[21] = 'green sweet'; USES[22] = 'purple sweet';
+  tag(23, 36, 'walk with coin'); tag(37, 50, 'walk with bag'); tag(51, 53, 'flapping'); tag(54, 60, 'looking around');
+  tag(61, 63, 'peck west'); tag(64, 66, 'peck east'); USES[67] = 'peck coin west'; USES[68] = 'peck coin east';
+  tag(69, 70, 'kick west'); tag(71, 76, 'tumble'); tag(77, 80, 'kick east'); tag(81, 86, 'tumble');
+  USES[87] = 'shop'; tag(88, 100, 'eating from bag'); tag(101, 103, 'shop'); tag(104, 114, 'dying');
+
+  let file = null, name = 'BEAK.SPR';
+  const $ = id => document.getElementById(id);
+
+  function render() {
+    const zoom = +$('zoom').value, crop = $('crop').checked;
+    document.body.classList.toggle('black', $('black').checked);
+    const used = file.sprites.filter(Boolean).length;
+    $('info').textContent = name + ': WGT sprite file version ' + file.version + ', ' + used + ' sprites (slots 0 to ' + (file.sprites.length - 1) + ')';
+    $('pal').innerHTML = file.palette.map((c, i) => '<div title="' + i + ': rgb(' + c + ')" style="background:rgb(' + c + ')"></div>').join('');
+    const grid = $('grid'); grid.innerHTML = '';
+    file.sprites.forEach((s, i) => {
+      if (!s) return;
+      const src = WGT.toCanvas(s, file.palette);
+      const bb = crop ? WGT.bbox(s) : { x: 0, y: 0, w: s.w, h: s.h };
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, bb.w) * zoom; c.height = Math.max(1, bb.h) * zoom;
+      const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+      if (bb.w) g.drawImage(src, bb.x, bb.y, bb.w, bb.h, 0, 0, bb.w * zoom, bb.h * zoom);
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.title = 'Click to download sprite ' + i + ' as PNG';
+      cell.appendChild(c);
+      cell.insertAdjacentHTML('beforeend', '<div class="n">#' + i + '</div><div class="d">' + s.w + '×' + s.h + '</div>' +
+        (name === 'BEAK.SPR' && USES[i] ? '<div class="a">' + USES[i] + '</div>' : ''));
+      cell.onclick = () => download(c, name.replace(/\.spr$/i, '') + '_' + i + '.png');
+      grid.appendChild(cell);
+    });
+  }
+
+  function download(canvas, fname) {
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png'); a.download = fname; a.click();
+  }
+
+  $('sheet').onclick = () => {
+    const cols = 10, cw = Math.max(...file.sprites.filter(Boolean).map(s => s.w)), ch = Math.max(...file.sprites.filter(Boolean).map(s => s.h));
+    const c = document.createElement('canvas');
+    c.width = cols * cw; c.height = Math.ceil(file.sprites.length / cols) * ch;
+    const g = c.getContext('2d');
+    file.sprites.forEach((s, i) => { if (s) g.drawImage(WGT.toCanvas(s, file.palette), (i % cols) * cw, Math.floor(i / cols) * ch); });
+    download(c, name.replace(/\.spr$/i, '') + '_sheet.png');
+  };
+  $('file').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { file = WGT.parseSpr(new Uint8Array(await f.arrayBuffer())); name = f.name; render(); }
+    catch (err) { alert('Could not read ' + f.name + ': ' + err.message); }
+  };
+  ['zoom', 'black', 'crop'].forEach(id => $(id).onchange = render);
+
+  file = WGT.parseSpr(WGT.base64ToBytes(window.BEAK_SPR_BASE64));
+  render();
+})();
+</script>
+</body>
+</html>

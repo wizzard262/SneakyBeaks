@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sneaky Beaks</title>
+<meta name="description" content="Ducks race for your coins, buy sweets at the shop and kick each other to steal them. A browser port of an old DOS C game.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>Sneaky Beaks</h1>
+  <p class="sub">Drop a coin. The ducks race for it, buy sweets at the shop, and kick each other to steal them. They'll even kick a sweet right out of another duck's mouth. A duck that goes too long without a sweet starves.</p>
+</header>
+
+<main>
+  <div id="stage"><canvas id="screen" width="320" height="200" aria-label="Sneaky Beaks game field"></canvas></div>
+
+  <div class="buttons">
+    <button id="btn-coin" class="primary">Drop coin <kbd>Space</kbd></button>
+    <button id="btn-duck">New duck <kbd>N</kbd></button>
+    <button id="btn-pause">Pause <kbd>P</kbd></button>
+    <button id="btn-fast">Speed: 1x <kbd>F</kbd></button>
+    <button id="btn-restart">Restart <kbd>R</kbd></button>
+    <button id="btn-bars">Hunger bars <kbd>H</kbd></button>
+    <button id="btn-bg">Background <kbd>B</kbd></button>
+    <button id="btn-sound">Sound: on <kbd>S</kbd></button>
+  </div>
+  <div id="stats"></div>
+
+  <div class="panels">
+    <section>
+      <h2>Ducks</h2>
+      <ul id="roster"></ul>
+    </section>
+    <section>
+      <h2>What's happening</h2>
+      <ul id="log"></ul>
+    </section>
+  </div>
+
+  <details class="howto">
+    <summary>How it works</summary>
+    <ul>
+      <li><b>Space</b> (or <b>M</b>, as in the original) drops a coin somewhere random. <b>Click or tap</b> the field to drop it exactly where you want.</li>
+      <li>Hungry ducks race to the coin. The winner pecks it up and walks it to the <b>shop</b>, where it buys a bag of sweets.</li>
+      <li>Hungry ducks chase any duck carrying a coin or a bag, or one that has just got a sweet, and <b>kick</b> it. The victim may drop the coin, sweets may fly out of the bag, or the sweet may get knocked right out of its mouth.</li>
+      <li>Ducks with sweets keep away from the others and eat one whenever they get peckish. A sweet on the ground gets pecked up and eaten straight away.</li>
+      <li>The bar over each duck is its <b>hunger</b>. When it runs out, the duck dies.</li>
+    </ul>
+    <p>Sprites are read straight from the original <code>BEAK.SPR</code> (WGT sprite format). <a href="sprites.html">Open the sprite viewer</a> to see all 115 frames.</p>
+  </details>
+</main>
+
+<footer>
+  Originally written in 1998 in C for DOS with the WordUp Graphics Toolkit. Ported to JavaScript and canvas. The <a href="archive/BEK_SCR8.C">original C source</a> is in the archive folder.
+</footer>
+
+<script src="assets/beak.spr.js"></script>
+<script src="js/spr.js"></script>
+<script src="js/config.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/game.js"></script>
+<script src="js/render.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
