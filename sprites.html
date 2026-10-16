@@ -3,40 +3,73 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>WGT Sprite Viewer</title>
 <link rel="stylesheet" href="css/style.css">
 <style>
-  .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 12px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 0 0 8px; }
+  .tools select, .tools input[type=file] { font: inherit; font-size: 0.9rem; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 2px 4px; color-scheme: light dark; }
+  #info { margin: 0; }
+  .grid { margin-bottom: 8px; }
   .grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .cell { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px; text-align: center; cursor: pointer; }
   .cell canvas { display: block; margin: 0 auto 4px; image-rendering: pixelated; background: var(--checker); }
   .cell .n { font: bold 12px monospace; color: var(--accent); }
   .cell .d { font: 11px monospace; color: var(--muted); }
   .cell .a { font: 11px sans-serif; color: var(--text); max-width: 120px; }
-  .pal { display: grid; grid-template-columns: repeat(32, 14px); gap: 1px; margin: 8px 0 16px; }
-  .pal div { width: 14px; height: 14px; }
-  body { --checker: repeating-conic-gradient(#2a2d38 0% 25%, #22252e 0% 50%) 50% / 12px 12px; }
+  .pal { display: grid; grid-template-columns: repeat(32, minmax(0, 14px)); gap: 1px; margin: 8px 0 8px; }
+  .pal div { aspect-ratio: 1; }
+  body { --checker: repeating-conic-gradient(#d9d6c0 0% 25%, #eeecdc 0% 50%) 50% / 12px 12px; }
+  @media (prefers-color-scheme: dark) { body { --checker: repeating-conic-gradient(#2a2d38 0% 25%, #22252e 0% 50%) 50% / 12px 12px; } }
   body.black { --checker: #000; }
 </style>
 </head>
 <body>
-<header>
-  <h1>WGT Sprite Viewer</h1>
-  <p class="sub">Reads WordUp Graphics Toolkit <code>.SPR</code> files (versions 1 to 4) right in the browser. Shows <code>BEAK.SPR</code> by default. Click a sprite to save it as a PNG.</p>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">Sneaky Beaks</a>
+    <nav class="nav" aria-label="Pages">
+      <a href="index.html">Game</a>
+      <a class="active" href="sprites.html">Sprite viewer</a>
+      <a href="https://github.com/wizzard262/SneakyBeaks">Code</a>
+    </nav>
+  </div>
 </header>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">WordUp Graphics Toolkit &middot; .SPR versions 1 to 4</p>
+    <h1 class="pixel-title">WGT Sprite Viewer</h1>
+    <p class="lead">Reads WGT <code>.SPR</code> files right in the browser. Shows <code>BEAK.SPR</code> by default. Click a sprite to save it as a PNG.</p>
+  </div>
+</section>
+
+<main class="wrap">
+<section class="card overlap">
 <div class="tools">
   <label><input type="file" id="file" accept=".spr,.SPR"> Open another .SPR file</label>
   <label>Zoom <select id="zoom"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>6</option></select></label>
   <label><input type="checkbox" id="black"> Black background</label>
   <label><input type="checkbox" id="crop" checked> Crop to visible pixels</label>
   <button id="sheet">Download sprite sheet PNG</button>
-  <a href="index.html">Back to the game</a>
 </div>
-<div id="info" class="sub"></div>
+<p id="info" class="small muted"></p>
+</section>
+<div class="cards">
+<section class="card card-wide">
 <h2>Palette</h2>
 <div class="pal" id="pal"></div>
+</section>
+<section class="card card-wide">
 <h2>Sprites</h2>
 <div class="grid" id="grid"></div>
+</section>
+</div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">Part of <a href="index.html">Sneaky Beaks</a> &middot; <a href="https://www.harriercarrier.com/portfolio.html">Portfolio</a></div>
+</footer>
 
 <script src="assets/beak.spr.js"></script>
 <script src="js/spr.js"></script>
